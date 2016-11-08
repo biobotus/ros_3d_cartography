@@ -1,0 +1,32 @@
+INSTALLATION
+sudo pip install --upgrade pip
+pip install oct2py
+pip install --user numpy scipy matplotlib ipython jupyter pandas sympy nose
+
+USAGE
+3D analysis uses 2D pictures to find labware on the deck and Point Cloud data
+- 2D images come from the DS325 [ros_depthsense_camera node]
+- PCL files come from ros node [pcl_to_windows] which are .txt files
+
+HOW DOES IT WORK
+It has to transform .txt to .mat files before it start the analysis on 2D images using Octave
+
+
+  ModuleDetection.py :
+   Calls function to create x-y-z-r-g-b file
+   Calls function to create .mat file
+   Calls function to analyse 2D and PCL data
+   Return a dictionnary with all labware detected: {[id,name,x,y,z,uid,image,source]} 
+	and save it in the database
+  camera_3d.py :
+   ROS node calling analysis functions when asked to
+  ObjectDetection.m :
+   Octave file performing image analysis (2D + 3D) (called by ModuleDetection.py)
+  data/CreateMatFile.m :
+   Octave file writing .mat file from x-y-z-r-g-b data (called by ModuleDetection.py)
+
+
+Start 3D cartography (standalone)
+>ros_ws : rosrun pcl_to_windows pcl_xyzrgb
+>biobot_ros_jtk : rosrun depthsense_camera_node camera_node
+> python camera_3d.py
