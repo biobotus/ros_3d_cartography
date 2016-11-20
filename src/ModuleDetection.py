@@ -3,6 +3,7 @@ from __future__ import division
 import oct2py as oc
 from oct2py import octave, Struct
 import os
+from os.path import join
 import scipy.misc
 import shutil
 from gridfs import GridFS
@@ -14,7 +15,11 @@ def SplitRosFile(RosFile, fileToData):
 	The output is 6 .txt files [x y z r g b] which are then read by function 
 	CreateMatFile().
 	"""
-	shutil.move("/home/ubuntu/ros_ws/example.txt", "/home/ubuntu/biobot_ros_jtk/src/ros_3d_cartography/src/example2.txt")
+	source = join('/home','ubuntu','ros_ws','example.txt')
+	destination = join('/home','ubuntu','biobot_ros_jtk','src','ros_3d_cartography','src')
+	# Move PCL file to /ros_3d_cartography IOT modify it with out being rewritten
+	shutil.copy(source,destination)
+	#shutil.move("/home/ubuntu/ros_ws/example.txt", "/home/ubuntu/biobot_ros_jtk/src/ros_3d_cartography/src/example.txt") 
 	x = []
 	y = []
 	z = []
@@ -66,21 +71,22 @@ def SplitRosFile(RosFile, fileToData):
 	return;
 
 def ImageAnalysis(nx,ny, imageName):
+	print nx
+	print ny
 	croptedPicFolder = '/home/ubuntu/biobot_ros_jtk/src/ros_3d_cartography/src/croptedPictures/'
 	fileToData = '/home/ubuntu/biobot_ros_jtk/src/ros_3d_cartography/src/data'
 	dataFolder = '/home/ubuntu/biobot_ros_jtk/src/ros_3d_cartography/src'
 
 
-	onePixelInMM = (1/17)*10;
-	yPhotoRes = 640*onePixelInMM
-	xPhotoRes = 480*onePixelInMM
-
+	onePixelInMM = float((1/17)*10)
+	yPhotoRes = float(640*onePixelInMM)
+	xPhotoRes = float(480*onePixelInMM)
 	labware = []
 
 	# Database --------------------------------------------------
-	client = pymongo.MongoClient()
-	biobot = client['biobot']
-	fs = GridFS(biobot)
+	#client = pymongo.MongoClient()
+	#biobot = client['biobot']
+	#fs = GridFS(biobot)
 	#------------------------------------------------------------
 
 	# Transform the data to .mat --------------------------------
@@ -91,39 +97,44 @@ def ImageAnalysis(nx,ny, imageName):
 
 	octave.addpath(fileToData)
 	answer = octave.ObjectDetection(imageName)
-	answer = dict(answer)
-	for v in answer.values():
-		item={'type':v[0]}
-		item['mod2DJPG'] = str(v[1]) # cropted picture name
-		item['mod2D'] = v[2]	# RGB matrices of cropted picture
-		item['x'] = float(v[3])
-		item['y'] = float(v[4])
-		item['z'] = round(float(v[5]),3)
-		labware.append(item)
-	print('-------------------------------------------------')
-	""" x-y values calculated from pictures are in the standard format
-	 Those values are, on the platform, y-x because of the design. Below 
-	 is the code to correct that.  
-		ny = number of square in y [0:3]
-		nx = number of square in x [0:4]
-	"""
-
-	for x in range(0,len(labware)):
-		x_plateforme = round(labware[x]["y"]+yPhotoRes*ny,3)
-		y_plateforme = round(xPhotoRes*(nx+1)-labware[x]["x"],3)
-		labware[x]["y"] = y_plateforme
-		labware[x]["x"] = x_plateforme
-		print(labware)
-		CP = os.path.join(croptedPicFolder,labware[x]["mod2DJPG"]+'.jpg')
-		scipy.misc.imsave(str(CP),labware[x]["mod2D"])
+	try:
+		answer = dict(answer)
+		for v in answer.values():
+			item={'type':v[0]}
+			item['mod2DJPG'] = str(v[1]) # cropted picture name
+			item['mod2D'] = v[2]	# RGB matrices of cropted picture
+			item['x'] = float(v[3])
+			item['y'] = float(v[4])
+			item['z'] = round(float(v[5]),3)  # Not send to DB, uses highest mod. instead (To be calculated)
+			labware.append(item)
+		""" x-y values calculated from pictures are in the standard format
+		 Those values are, on the platform, y-x because of the design. Below 
+		 is the code to correct that.  
+			ny = number of square in y [0:3]
+			nx = number of square in x [0:4]
+		"""
+		print(len(labware))
+		for x in range(0,len(labware)):
+			x_plateforme = round(labware[x]["y"]+yPhotoRes*ny,3)
+			y_plateforme = round(xPhotoRes*(nx+1)-labware[x]["x"],3)
+			labware[x]["y"] = y_plateforme
+			labware[x]["x"] = x_plateforme
+			CP = os.path.join(croptedPicFolder,labware[x]["mod2DJPG"]+'.jpg')
+			print(["saved image: ",CP])
+			scipy.misc.imsave(str(CP),labware[x]["mod2D"])
 		
-		# Send each labware to the database
-		with open('croptedPictures/'+labware[x]["mod2DJPG"]+'.jpg', 'rb') as f:
-			data = f.read()
-
-		uid = uuid.uuid4().hex
-		filename = "{}.jpg".format(uid)
-		image_id = fs.put(data, filename=filename)
-		item = {'id': x, 'name': labware[x]["type"], 'carto_x': labware[x]["x"], 'carto_y': labware[x]["y"], 'carto_z': labware[x]["z"], 'uuid': uid, 'filename': filename, 'image_id': image_id, 'source': '3d_cartography'}
-		biobot.deck.insert_one(item)		
-		
+			print labware
+			"""
+			# Send each labware to the database
+			with open('croptedPictures/'+labware[x]["mod2DJPG"]+'.jpg', 'rb') as f:
+				data = f.read()
+	
+			uid = uuid.uuid4().hex
+			filename = "{}.jpg".format(uid)
+			image_id = fs.put(data, filename=filename)
+			item = {'type': labware[x]["type"], 'carto_x': labware[x]["x"], 'carto_y': labware[x]["y"], 'uuid': uid, 'filename': filename, 'validated': False}
+			#item = {'id': x, 'name': labware[x]["type"], 'carto_x': labware[x]["x"], 'carto_y': labware[x]["y"], 'carto_z': labware[x]["z"], 'uuid': uid, 'filename': filename, 'image_id': image_id, 'source': '3d_cartography'}
+			biobot.deck.insert_one(item)		
+			"""
+	except:
+		print("Nothing was detected")
