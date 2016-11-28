@@ -1,8 +1,8 @@
-# Get files from path and output a .mat file 
+# Get files from path and output a .mat file
 # that has the same name as the image input from
 # the Python code
 function CreateMatFile(path) %x,y,z,r,g,b
-  
+
   x = load(strcat(char(path),'/x'));
   y = load(strcat(char(path),'/y'));
   z = load(strcat(char(path),'/z'));

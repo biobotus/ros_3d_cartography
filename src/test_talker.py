@@ -4,7 +4,7 @@ import rospy
 from std_msgs.msg import Int32
 
 def talker():
-    pub = rospy.Publisher('WhatEverJoSend', Int32,queue_size=10)
+    pub = rospy.Publisher('Do_Cartography', Int32,queue_size=10)
     rospy.init_node('test_talker',anonymous=True)
     empty = raw_input("Press enter to continue")
     msg = 0

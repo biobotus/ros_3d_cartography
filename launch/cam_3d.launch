@@ -1,0 +1,9 @@
+<launch>
+
+  <node name="depthsense_camera_node" pkg="ros_depthsense_camera" type="depthsense_camera_node" output="screen"/>
+  <node name="pcl_xyzrgb" pkg="pcl_to_windows" type="pcl_xyzrgb" output="screen" />
+  <node name="camera_3d" pkg="ros_3d_cartography" type="camera_3d.py" output="screen" />
+
+</launch>
+
+
