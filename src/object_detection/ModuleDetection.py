@@ -77,6 +77,18 @@ def ImageAnalysis(nx,ny, imageName):
     mm if nx and ny are larger than 1.
     INPUT : square numbers on the deck (nx/and ny are provided by planner) and the imageName
     OUTPUT: Data set is store in the DB
+
+
+    This function also recalculates x-y position on the platform using nx and ny.
+         x-y values calculated from pictures are in the standard format
+         Those values are, on the platform, y-x because of the design. Below
+         is the code to correct that.
+            ny = number of square in y [0:3]
+            nx = number of square in x [0:4]
+
+         y_plateforme = round(item["y"]+yPhotoRes*ny,3)
+         x_plateforme = round(xPhotoRes*(nx+1)-item["x"],3)
+        
     """
     croptedPicFolder = '/home/ubuntu/biobot_ros_jtk/src/ros_3d_cartography/src/croptedPictures/'
     fileToData = '/home/ubuntu/biobot_ros_jtk/src/ros_3d_cartography/src/data'

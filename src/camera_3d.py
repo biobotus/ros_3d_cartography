@@ -8,28 +8,39 @@ import sys
 import os
 import time
 import rospy # rospy for the subscriber
+import time
 
 from sensor_msgs.msg import Image # ROS image message
 from std_msgs.msg import String, Int32
 from biobot_ros_msgs.msg import IntList
 from cv_bridge import CvBridge, CvBridgeError # ROS Image message -> OpenCV2 image converter
 # Imports for Barrier class
-import time
 from threading import Thread,Semaphore
 ws_dir = os.path.join('/home','ubuntu','biobot_ros_jtk','src','ros_3d_cartography','src','object_detection')
 os.chdir(ws_dir)
 
 class Barrier:
-    """ Barrier class is used to wait until the 2D image is correctly saved in jpg format
-    before continuing the analysis. To pass the barrier, both function must call it (callback_command & callback_3d_capture)
+    """ Barrier class is used to wait until the 2D image is 
+    correctly saved in jpg format before continuing the analysis.
+    To pass the barrier, both function must call it 
+    (callback_command & callback_3d_capture)
     """
     def __init__(self, n):
+        """ 
+        Built the Barrier Object.
+        :param n: Number of elements to be connected to the Barrier
+                    before continuing the code.
+        :return: returns nothing
+        """
         self.n = n
         self.count = 0
         self.mutex = Semaphore(1)
         self.barrier = Semaphore(0)
 
     def wait(self):
+        """
+        Wait until every called to Barrier were made.
+        """
         self.mutex.acquire()
         self.count = self.count + 1
         self.mutex.release()
@@ -41,6 +52,15 @@ class Barrier:
 class Camera3d:
 
     def __init__(self):
+        """
+        Initialise Camera3d object. It starts relevant subscriber and publisher needed
+        for the 3D cartography to work properly.
+        
+
+        Publisher: 
+        Subscriber: /Do_cartography => Send command to start analysis using the nx/ny value [square number to be analysed]
+                    /rgb_image      => 2D image from DS325
+        """
         self.node_name = self.__class__.__name__
         print("init")
         #self.image_pub = rospy.Publisher("image_topic_2",Image)
@@ -67,18 +87,21 @@ class Camera3d:
         - ImageAnalysis -> Perform 2D and 3D analysis on the current data set (octave file)
             INPUT : Square coordinate (nx / ny) and file (.jpg and .mat ) name. Both name must be the same
             OUTPUT: If something is found, data are stored in the DB
+
+        
+         +---------------------------------------+         -----> x.
+         |   nx,ny: |          |                 |         | \      
+         |   0,0    |    1,0   |   ...           |         |  \     
+         |__________|__________|                 |         V   v  z.
+         |          |                            |        y.        
+         |   0,1    |                            |
+         | _________|                            |
+         |          |                            |
+         |    ...   |                            |
+         |          |                            |
+         +---------------------------------------+
+
         """
-        # +---------------------------------------+         -----> x.
-        # |   nx,ny: |          |                 |         | \
-        # |   0,0    |    1,0   |   ...           |         |  \
-        # |__________|__________|                 |         V   v  z.
-        # |          |                            |        y.
-        # |   0,1    |                            |
-        # | _________|                            |
-        # |          |                            |
-        # |    ...   |                  |
-        # |          |                            |
-        # +---------------------------------------+
 
         print("Analysing image")
         SplitRosFile('example.txt','/home/ubuntu/biobot_ros_jtk/src/ros_3d_cartography/src/data')
@@ -136,7 +159,7 @@ class Camera3d:
             try:
                 cv2.imwrite('/home/ubuntu/.ros/example.jpg',cv2_img)
                 self.commandImageReady = 1  # Flag telling that an image has just been saved
-                cv2.imshow("Image received through ROS",cv2_img)
+                #cv2.imshow("Image received through ROS",cv2_img)
                 #cv2.waitKey(3)
                 while not os.path.isfile('/home/ubuntu/.ros/example.jpg'):
                     time.sleep(0.1)

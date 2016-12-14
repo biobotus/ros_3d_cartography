@@ -11,7 +11,7 @@
 %pkg load image # For octave only
 function [response] = ObjectDetection (image_file) # Image matrix RGB, .mat PCL file (from CreateMatFile.m)
 
-  modeDebug = 1; % set to 1 to get figures
+  modeDebug = 0; % set to 1 to get figures
   %image_file = "example";
   try
     pkg load image
@@ -182,16 +182,25 @@ function [response] = ObjectDetection (image_file) # Image matrix RGB, .mat PCL 
     hold on
   end
 
+  indmax_embout = nan;
+  indmin_embout = nan;
+  indmax_puit = nan;
+  indmin_puit = nan;
+  indmax_grosPuit = nan;
+  indmin_grosPuit = nan;
+  indmax_poubelle = nan;
+  indmin_poubelle = nan;
+
   for i=1:size(BoundingBox)
       % Hardcoded value: all those -> until end
       if modeDebug
         rectangle('Position',BoundingBox(i,:),'EdgeColor','b','LineWidth',3)
       end
       % Values of each modules for longest and shortest axes
-      indmax_embout = find(MajorAxis>=220 & MajorAxis<=470); %doubleEmbout
-      indmin_embout = find(MinorAxis>=120 & MinorAxis<=260); %doubleEmbout >=222
-      indmax_puit = find(MajorAxis>=200 & MajorAxis<=470);   %mixed       & puit norm
-      indmin_puit = find(MinorAxis>=135 & MinorAxis<=190);   %mixed       & puit norm
+      indmax_embout = find(MajorAxis>=220 & MajorAxis<=550); #470); %doubleEmbout
+      indmin_embout = find(MinorAxis>=120 & MinorAxis<=300); %doubleEmbout >=260
+      indmax_puit = find(MajorAxis>=200 & MajorAxis<=550);   % 470mixed       & puit norm
+      indmin_puit = find(MinorAxis>=135 & MinorAxis<=300);   % 190mixed       & puit norm
       indmax_grosPuit = find(MajorAxis>=300 & MajorAxis<=450);
       indmin_grosPuit = find(MinorAxis>=115 & MinorAxis<=190);
       indmax_poubelle = find(MajorAxis>=500 & MajorAxis<=630);
@@ -386,7 +395,7 @@ function [response] = ObjectDetection (image_file) # Image matrix RGB, .mat PCL 
               end
               % IF more than 1000 point AND EMBOUT size corresponds, then:
               if (k >=400) && BBIndex(i,2)>0
-                  x_value = num2str(BoundingBox(BBIndex(i,n),1)*OnepixelInMM);
+                  x_value = num2str(BoundingBox(BBIndex(i,n),1)*OnepixelInMM-80);
                   y_value = num2str(BoundingBox(BBIndex(i,n),2)*OnepixelInMM);
                   z_value = num2str(min(xbob)) # Value is not in mm  (To understand look at PCL/scatter3 plot)
 
@@ -417,7 +426,7 @@ function [response] = ObjectDetection (image_file) # Image matrix RGB, .mat PCL 
               end
               % IF less than 1000 point AND PUIT size corresponds, then:
               if k<=100 && BBIndex(i,1)>0
-                  x_value = num2str(BoundingBox(BBIndex(i,n),1)*OnepixelInMM);
+                  x_value = num2str(BoundingBox(BBIndex(i,n),1)*OnepixelInMM-83);
                   y_value = num2str(BoundingBox(BBIndex(i,n),2)*OnepixelInMM);
                   z_value = num2str(min(xbob));
 
@@ -447,7 +456,7 @@ function [response] = ObjectDetection (image_file) # Image matrix RGB, .mat PCL 
               end
               % IF more than 800 point AND Large well size corresponds, then:
               if k>=100 && BBIndex(i,3)>0
-                  x_value = num2str(BoundingBox(BBIndex(i,n),1)*OnepixelInMM);
+                  x_value = num2str(BoundingBox(BBIndex(i,n),1)*OnepixelInMM-145);
                   y_value = num2str(BoundingBox(BBIndex(i,n),2)*OnepixelInMM);
                   z_value = num2str(min(xbob));
                   strmax = ['Large Well ',x_value,' / ',y_value,' mm' ];
@@ -481,7 +490,7 @@ function [response] = ObjectDetection (image_file) # Image matrix RGB, .mat PCL 
               end
               % IF more than 1000 point AND TRASH size corresponds, then:
               if k_poubelle>=50 && BBIndex(i,4)>0 && k>=4000
-                  x_value = num2str(BoundingBox(BBIndex(i,n),1)*OnepixelInMM);
+                  x_value = num2str(BoundingBox(BBIndex(i,n),1)*OnepixelInMM-90);
                   y_value = num2str(BoundingBox(BBIndex(i,n),2)*OnepixelInMM);
                   z_value = num2str(min(xbob));
 
