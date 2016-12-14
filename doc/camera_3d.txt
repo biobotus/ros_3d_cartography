@@ -1,0 +1,78 @@
+Help on module camera_3d:
+
+NAME
+    camera_3d
+
+FILE
+    /home/ubuntu/biobot_ros_jtk/src/ros_3d_cartography/src/object_detection/camera_3d.pyc
+
+CLASSES
+    Barrier
+    Camera3d
+
+    class Barrier
+     |  Barrier class is used to wait until the 2D image is
+     |  correctly saved in jpg format before continuing the analysis.
+     |  To pass the barrier, both function must call it
+     |  (callback_command & callback_3d_capture)
+     |
+     |  Methods defined here:
+     |
+     |  __init__(self, n)
+     |      Built the Barrier Object.
+     |      :param n: Number of elements to be connected to the Barrier
+     |                  before continuing the code.
+     |      :return: returns nothing
+     |
+     |  wait(self)
+     |      Wait until every called to Barrier were made.
+
+    class Camera3d
+     |  Methods defined here:
+     |
+     |  __init__(self)
+     |      Initialise Camera3d object. It starts relevant subscriber and publisher needed
+     |      for the 3D cartography to work properly.
+     |
+     |
+     |      Publisher:
+     |      Subscriber: /Do_cartography => Send command to start analysis using the nx/ny value [square number to be analysed]
+     |                  /rgb_image      => 2D image from DS325
+     |
+     |  callback_3d_capture(self, msg)
+     |      Callback called each time an image is available from the DS325
+     |
+     |  callback_command(self, msg)
+     |      Callback called each time a demand for the cartography analysis.
+     |
+     |  imageAnalysis(self, nx, ny)
+     |      imageAnalysis calls function from ModuleDetection.
+     |      - SplitRosFile -> split the .txt file into x y z r g b data. Then, an octave file is called
+     |          IOT save those data into one .mat file
+     |          INPUT : file name / path where x y z r g b data will be stored
+     |          OUTPUT: .mat file (example.mat)
+     |      - ImageAnalysis -> Perform 2D and 3D analysis on the current data set (octave file)
+     |          INPUT : Square coordinate (nx / ny) and file (.jpg and .mat ) name. Both name must be the same
+     |          OUTPUT: If something is found, data are stored in the DB
+     |
+     |
+     |       +---------------------------------------+         -----> x.
+     |       |   nx,ny: |          |                 |         | \
+     |       |   0,0    |    1,0   |   ...           |         |  \
+     |       |__________|__________|                 |         V   v  z.
+     |       |          |                            |        y.
+     |       |   0,1    |                            |
+     |       | _________|                            |
+     |       |          |                            |
+     |       |    ...   |                            |
+     |       |          |                            |
+     |       +---------------------------------------+
+
+FUNCTIONS
+    main(args)
+
+DATA
+    print_function = _Feature((2, 6, 0, 'alpha', 2), (3, 0, 0, 'alpha', 0)...
+    ws_dir = '/home/ubuntu/biobot_ros_jtk/src/ros_3d_cartography/src/objec...
+
+

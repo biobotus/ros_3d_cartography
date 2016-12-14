@@ -1,0 +1,39 @@
+Help on module ModuleDetection:
+
+NAME
+    ModuleDetection
+
+FILE
+    /home/ubuntu/biobot_ros_jtk/src/ros_3d_cartography/src/object_detection/ModuleDetection.py
+
+FUNCTIONS
+    ImageAnalysis(nx, ny, imageName)
+        ImageAnalysis is calling the octave file calculating the probability that
+        there is labware(s) in the actual picture. Because the x/y system of the image is
+        different from the x/y system of the platform, corrections are made and add the necessary
+        mm if nx and ny are larger than 1.
+        INPUT : square numbers on the deck (nx/and ny are provided by planner) and the imageName
+        OUTPUT: Data set is store in the DB
+
+
+        This function also recalculates x-y position on the platform using nx and ny.
+             x-y values calculated from pictures are in the standard format
+             Those values are, on the platform, y-x because of the design. Below
+             is the code to correct that.
+                ny = number of square in y [0:3]
+                nx = number of square in x [0:4]
+
+             y_plateforme = round(item["y"]+yPhotoRes*ny,3)
+             x_plateforme = round(xPhotoRes*(nx+1)-item["x"],3)
+
+    SplitRosFile(RosFile, fileToData)
+        Input : example.txt file output by pcl_to_windows ros node.
+        The output is 6 .txt files [x y z r g b] which are then read by function
+        CreateMatFile().
+
+DATA
+    division = _Feature((2, 2, 0, 'alpha', 2), (3, 0, 0, 'alpha', 0), 8192...
+    octave = <oct2py.core.Oct2Py object>
+    ws_dir = '/home/ubuntu/biobot_ros_jtk/src/ros_3d_cartography/src/objec...
+
+
